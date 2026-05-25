@@ -1,31 +1,47 @@
 package com.example.trekkingapp.tourprovider;
 
+import com.example.trekkingapp.user.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tour_providers")
+@Table(
+        name = "tour_providers",
+        uniqueConstraints = @UniqueConstraint(name = "uk_tour_providers_user_id", columnNames = "user_id")
+)
 public class TourProvider {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long providerId;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
+    @Column(nullable = false)
     private String companyName;
 
     private String description;
 
     private String businessLicenseUrl;
 
+    @Column(nullable = false)
     private String phone;
 
+    @Column(nullable = false)
     private String email;
 
     private String address;
@@ -58,6 +74,14 @@ public class TourProvider {
 
     public void setProviderId(Long providerId) {
         this.providerId = providerId;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getCompanyName() {

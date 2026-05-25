@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 public record TourProviderResponse(
         Long providerId,
+        Long userId,
+        String userEmail,
         String companyName,
         String description,
         String businessLicenseUrl,
