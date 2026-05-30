@@ -63,7 +63,22 @@ public class AuthService {
     }
 
     @Transactional
+    public UserResponse selectMyRole(SelectRoleRequest request) {
+        Long currentUserId = currentUserService.getCurrentUserId();
+        return selectRoleForUser(currentUserId, request);
+    }
+
+    @Transactional
     public UserResponse selectRole(Long userId, SelectRoleRequest request) {
+        Long currentUserId = currentUserService.getCurrentUserId();
+        if (!currentUserId.equals(userId)) {
+            throw new IllegalArgumentException("You are not allowed to select role for another user");
+        }
+
+        return selectRoleForUser(userId, request);
+    }
+
+    private UserResponse selectRoleForUser(Long userId, SelectRoleRequest request) {
         String requestedRole = request.role().trim().toUpperCase();
         if (!SELECTABLE_ROLES.contains(requestedRole)) {
             throw new IllegalArgumentException("Only TREKKER or TOUR_PROVIDER can be selected by users");
@@ -71,6 +86,11 @@ public class AuthService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (Boolean.TRUE.equals(user.getRoleSelected())) {
+            throw new IllegalArgumentException("Role already selected");
+        }
+
         Role role = roleRepository.findByRoleName(requestedRole)
                 .orElseThrow(() -> new IllegalStateException("Required role is missing: " + requestedRole));
 

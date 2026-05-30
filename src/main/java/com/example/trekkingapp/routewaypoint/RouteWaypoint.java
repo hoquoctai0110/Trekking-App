@@ -27,8 +27,9 @@ public class RouteWaypoint {
     @JoinColumn(name = "route_id", nullable = false)
     private Route route;
 
-    @Column(nullable = false)
     private String name;
+
+    private String description;
 
     @Column(nullable = false)
     private Double latitude;
@@ -36,12 +37,21 @@ public class RouteWaypoint {
     @Column(nullable = false)
     private Double longitude;
 
-    private String type;
-
-    private String description;
+    @Column(nullable = false)
+    private String category;
 
     @Column(nullable = false)
     private Integer orderIndex;
+
+    private Double elevation;
+
+    private Double distanceFromStartKm;
+
+    private Integer estimatedArrivalMinute;
+
+    private Boolean mandatory;
+
+    private String iconKey;
 
     private LocalDateTime createdAt;
 
@@ -83,6 +93,14 @@ public class RouteWaypoint {
         this.name = name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public Double getLatitude() {
         return latitude;
     }
@@ -99,20 +117,12 @@ public class RouteWaypoint {
         this.longitude = longitude;
     }
 
-    public String getType() {
-        return type;
+    public String getCategory() {
+        return category;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public Integer getOrderIndex() {
@@ -121,6 +131,46 @@ public class RouteWaypoint {
 
     public void setOrderIndex(Integer orderIndex) {
         this.orderIndex = orderIndex;
+    }
+
+    public Double getElevation() {
+        return elevation;
+    }
+
+    public void setElevation(Double elevation) {
+        this.elevation = elevation;
+    }
+
+    public Double getDistanceFromStartKm() {
+        return distanceFromStartKm;
+    }
+
+    public void setDistanceFromStartKm(Double distanceFromStartKm) {
+        this.distanceFromStartKm = distanceFromStartKm;
+    }
+
+    public Integer getEstimatedArrivalMinute() {
+        return estimatedArrivalMinute;
+    }
+
+    public void setEstimatedArrivalMinute(Integer estimatedArrivalMinute) {
+        this.estimatedArrivalMinute = estimatedArrivalMinute;
+    }
+
+    public Boolean getMandatory() {
+        return mandatory;
+    }
+
+    public void setMandatory(Boolean mandatory) {
+        this.mandatory = mandatory;
+    }
+
+    public String getIconKey() {
+        return iconKey;
+    }
+
+    public void setIconKey(String iconKey) {
+        this.iconKey = iconKey;
     }
 
     public LocalDateTime getCreatedAt() {

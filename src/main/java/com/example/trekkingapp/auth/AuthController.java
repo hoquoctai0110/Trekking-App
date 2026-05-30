@@ -32,11 +32,17 @@ public class AuthController {
         return new ApiResponse<>(true, "Current user retrieved successfully", authService.getCurrentUser());
     }
 
+    @PostMapping("/me/select-role")
+    public ApiResponse<UserResponse> selectMyRole(@Valid @RequestBody SelectRoleRequest request) {
+        return new ApiResponse<>(true, "Current user role selected successfully", authService.selectMyRole(request));
+    }
+
+    // Deprecated: use POST /api/v1/auth/me/select-role instead.
     @PostMapping("/users/{userId}/select-role")
     public ResponseEntity<ApiResponse<UserResponse>> selectRole(
             @PathVariable Long userId,
             @Valid @RequestBody SelectRoleRequest request
     ) {
-        return ResponseEntity.ok(new ApiResponse<>(true, "Role selected successfully", authService.selectRole(userId, request)));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Current user role selected successfully", authService.selectRole(userId, request)));
     }
 }

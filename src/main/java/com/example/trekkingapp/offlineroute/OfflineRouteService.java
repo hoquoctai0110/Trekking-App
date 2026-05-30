@@ -92,11 +92,16 @@ public class OfflineRouteService {
                         waypoint.getWaypointId(),
                         route.getRouteId(),
                         waypoint.getName(),
+                        waypoint.getDescription(),
                         waypoint.getLatitude(),
                         waypoint.getLongitude(),
-                        waypoint.getType(),
-                        waypoint.getDescription(),
+                        waypoint.getCategory(),
                         waypoint.getOrderIndex(),
+                        waypoint.getElevation(),
+                        waypoint.getDistanceFromStartKm(),
+                        waypoint.getEstimatedArrivalMinute(),
+                        waypoint.getMandatory(),
+                        waypoint.getIconKey(),
                         waypoint.getCreatedAt(),
                         waypoint.getUpdatedAt()
                 ))

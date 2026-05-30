@@ -25,7 +25,7 @@ public class RouteWaypointController {
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TOUR_PROVIDER')")
     public ApiResponse<RouteWaypointResponse> createWaypoint(
             @PathVariable Long routeId,
             @Valid @RequestBody RouteWaypointRequest request
@@ -38,8 +38,26 @@ public class RouteWaypointController {
         return new ApiResponse<>(true, "Route waypoints retrieved successfully", routeWaypointService.findByRoute(routeId));
     }
 
+    @GetMapping("/mobile")
+    public ApiResponse<List<MobileRouteWaypointResponse>> getMobileWaypoints(@PathVariable Long routeId) {
+        return new ApiResponse<>(true, "Mobile route waypoints retrieved successfully", routeWaypointService.findMobileByRoute(routeId));
+    }
+
+    @GetMapping("/{waypointId}")
+    public ApiResponse<RouteWaypointResponse> getWaypoint(@PathVariable Long routeId, @PathVariable Long waypointId) {
+        return new ApiResponse<>(true, "Route waypoint retrieved successfully", routeWaypointService.findById(routeId, waypointId));
+    }
+
+    @GetMapping("/category/{category}")
+    public ApiResponse<List<RouteWaypointResponse>> getWaypointsByCategory(
+            @PathVariable Long routeId,
+            @PathVariable String category
+    ) {
+        return new ApiResponse<>(true, "Route waypoints retrieved successfully", routeWaypointService.findByCategory(routeId, category));
+    }
+
     @PutMapping("/{waypointId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TOUR_PROVIDER')")
     public ApiResponse<RouteWaypointResponse> updateWaypoint(
             @PathVariable Long routeId,
             @PathVariable Long waypointId,
@@ -49,7 +67,7 @@ public class RouteWaypointController {
     }
 
     @DeleteMapping("/{waypointId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TOUR_PROVIDER')")
     public ApiResponse<String> deleteWaypoint(@PathVariable Long routeId, @PathVariable Long waypointId) {
         return new ApiResponse<>(true, "Route waypoint deleted successfully", routeWaypointService.delete(routeId, waypointId));
     }

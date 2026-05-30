@@ -9,5 +9,11 @@ public interface RouteWaypointRepository extends JpaRepository<RouteWaypoint, Lo
 
     List<RouteWaypoint> findByRoute_RouteIdOrderByOrderIndexAsc(Long routeId);
 
+    Optional<RouteWaypoint> findByWaypointId(Long waypointId);
+
     Optional<RouteWaypoint> findByWaypointIdAndRoute_RouteId(Long waypointId, Long routeId);
+
+    boolean existsByRoute_RouteIdAndOrderIndex(Long routeId, Integer orderIndex);
+
+    List<RouteWaypoint> findByRoute_RouteIdAndCategoryOrderByOrderIndexAsc(Long routeId, String category);
 }
