@@ -19,6 +19,13 @@ public record RouteRequest(
         String difficulty,
         String status,
         Long createdBy,
-        String createdType
+        String createdType,
+        Double startLatitude,
+        Double startLongitude,
+        Double endLatitude,
+        Double endLongitude,
+
+        @PositiveOrZero(message = "elevationGain must be greater than or equal to 0")
+        Double elevationGain
 ) {
 }

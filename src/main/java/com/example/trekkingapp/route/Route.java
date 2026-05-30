@@ -37,6 +37,16 @@ public class Route {
 
     private String createdType;
 
+    private Double startLatitude;
+
+    private Double startLongitude;
+
+    private Double endLatitude;
+
+    private Double endLongitude;
+
+    private Double elevationGain;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -131,6 +141,46 @@ public class Route {
 
     public void setCreatedType(String createdType) {
         this.createdType = createdType;
+    }
+
+    public Double getStartLatitude() {
+        return startLatitude;
+    }
+
+    public void setStartLatitude(Double startLatitude) {
+        this.startLatitude = startLatitude;
+    }
+
+    public Double getStartLongitude() {
+        return startLongitude;
+    }
+
+    public void setStartLongitude(Double startLongitude) {
+        this.startLongitude = startLongitude;
+    }
+
+    public Double getEndLatitude() {
+        return endLatitude;
+    }
+
+    public void setEndLatitude(Double endLatitude) {
+        this.endLatitude = endLatitude;
+    }
+
+    public Double getEndLongitude() {
+        return endLongitude;
+    }
+
+    public void setEndLongitude(Double endLongitude) {
+        this.endLongitude = endLongitude;
+    }
+
+    public Double getElevationGain() {
+        return elevationGain;
+    }
+
+    public void setElevationGain(Double elevationGain) {
+        this.elevationGain = elevationGain;
     }
 
     public LocalDateTime getCreatedAt() {

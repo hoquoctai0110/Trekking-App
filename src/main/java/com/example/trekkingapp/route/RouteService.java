@@ -69,6 +69,7 @@ public class RouteService {
         route.setStatus(defaultIfBlank(request.status(), STATUS_ACTIVE));
         route.setCreatedBy(request.createdBy());
         route.setCreatedType(defaultIfBlank(request.createdType(), CREATED_TYPE_USER));
+        applyRouteShapeFields(route, request);
     }
 
     private void applyUpdateFields(Route route, RouteRequest request) {
@@ -77,6 +78,7 @@ public class RouteService {
         route.setDistanceKm(request.distanceKm());
         route.setEstimatedDurationMin(request.estimatedDurationMin());
         route.setDifficulty(request.difficulty());
+        applyRouteShapeFields(route, request);
 
         if (!isBlank(request.status())) {
             route.setStatus(request.status());
@@ -100,9 +102,22 @@ public class RouteService {
                 route.getStatus(),
                 route.getCreatedBy(),
                 route.getCreatedType(),
+                route.getStartLatitude(),
+                route.getStartLongitude(),
+                route.getEndLatitude(),
+                route.getEndLongitude(),
+                route.getElevationGain(),
                 route.getCreatedAt(),
                 route.getUpdatedAt()
         );
+    }
+
+    private void applyRouteShapeFields(Route route, RouteRequest request) {
+        route.setStartLatitude(request.startLatitude());
+        route.setStartLongitude(request.startLongitude());
+        route.setEndLatitude(request.endLatitude());
+        route.setEndLongitude(request.endLongitude());
+        route.setElevationGain(request.elevationGain());
     }
 
     private String defaultIfBlank(String value, String defaultValue) {
