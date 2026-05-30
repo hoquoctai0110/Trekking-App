@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
                         .requestMatchers("/api/v1/auth/google").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/routes/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tours").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tours/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/tour-providers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/tour-providers/**").permitAll()
                         .anyRequest().authenticated()
