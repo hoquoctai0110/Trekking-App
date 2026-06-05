@@ -49,7 +49,7 @@ public class AuthService {
     public GoogleLoginResponse loginWithGoogle(GoogleLoginRequest request) {
         GoogleUserInfo googleUserInfo = googleTokenVerifierService.verify(request.idToken());
         User user = userRepository.findByGoogleId(googleUserInfo.googleId())
-                .orElseGet(() -> createUser(googleUserInfo));
+                .orElseGet(() -> findOrCreateUser(googleUserInfo));
 
         return new GoogleLoginResponse(jwtService.generateToken(user), userService.toResponse(user));
     }
@@ -116,5 +116,31 @@ public class AuthService {
         user.setStatus(STATUS_ACTIVE);
         user.setRoleSelected(false);
         return userRepository.save(user);
+    }
+
+    private User findOrCreateUser(GoogleUserInfo googleUserInfo) {
+        return userRepository.findByEmail(googleUserInfo.email())
+                .map(existingUser -> linkOrValidateGoogleAccount(existingUser, googleUserInfo))
+                .orElseGet(() -> createUser(googleUserInfo));
+    }
+
+    private User linkOrValidateGoogleAccount(User existingUser, GoogleUserInfo googleUserInfo) {
+        String existingGoogleId = existingUser.getGoogleId();
+        if (existingGoogleId == null || existingGoogleId.isBlank()) {
+            existingUser.setGoogleId(googleUserInfo.googleId());
+            if (googleUserInfo.fullName() != null && !googleUserInfo.fullName().isBlank()) {
+                existingUser.setFullName(googleUserInfo.fullName());
+            }
+            if (googleUserInfo.avatarUrl() != null && !googleUserInfo.avatarUrl().isBlank()) {
+                existingUser.setAvatarUrl(googleUserInfo.avatarUrl());
+            }
+            return userRepository.save(existingUser);
+        }
+
+        if (!existingGoogleId.equals(googleUserInfo.googleId())) {
+            throw new IllegalArgumentException("Email is already linked to another Google account");
+        }
+
+        return existingUser;
     }
 }
