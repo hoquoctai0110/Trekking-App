@@ -53,7 +53,7 @@ public class TourController {
 
     @GetMapping
     public ApiResponse<List<TourResponse>> getTours() {
-        return new ApiResponse<>(true, "Tours retrieved successfully", tourService.findAll());
+        return new ApiResponse<>(true, "Tours retrieved successfully", tourService.findPublishedTours());
     }
 
     @GetMapping("/provider/{providerId}")

@@ -10,6 +10,7 @@ public record RouteResponse(
         Integer estimatedDurationMin,
         String difficulty,
         String status,
+        String routeType,
         Long createdBy,
         String createdType,
         Double startLatitude,

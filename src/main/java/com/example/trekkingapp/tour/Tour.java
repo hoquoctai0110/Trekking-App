@@ -54,10 +54,10 @@ public class Tour {
 
     private String status;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime startDate;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime endDate;
 
     private LocalDateTime createdAt;

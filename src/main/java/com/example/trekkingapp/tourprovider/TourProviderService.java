@@ -114,6 +114,7 @@ public class TourProviderService {
         tourProvider.setCompanyName(request.companyName());
         tourProvider.setDescription(request.description());
         tourProvider.setBusinessLicenseUrl(request.businessLicenseUrl());
+        tourProvider.setCitizenIdImageUrl(request.citizenIdImageUrl());
         tourProvider.setPhone(request.phone());
         tourProvider.setEmail(request.email());
         tourProvider.setAddress(request.address());
@@ -128,6 +129,7 @@ public class TourProviderService {
                 tourProvider.getCompanyName(),
                 tourProvider.getDescription(),
                 tourProvider.getBusinessLicenseUrl(),
+                tourProvider.getCitizenIdImageUrl(),
                 tourProvider.getPhone(),
                 tourProvider.getEmail(),
                 tourProvider.getAddress(),

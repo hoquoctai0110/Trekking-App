@@ -33,6 +33,8 @@ public class Route {
 
     private String status;
 
+    private String routeType;
+
     private Long createdBy;
 
     private String createdType;
@@ -63,6 +65,10 @@ public class Route {
 
         if (isBlank(createdType)) {
             createdType = "USER";
+        }
+
+        if (isBlank(routeType)) {
+            routeType = RouteType.ONE_WAY.name();
         }
     }
 
@@ -125,6 +131,14 @@ public class Route {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getRouteType() {
+        return routeType;
+    }
+
+    public void setRouteType(String routeType) {
+        this.routeType = routeType;
     }
 
     public Long getCreatedBy() {

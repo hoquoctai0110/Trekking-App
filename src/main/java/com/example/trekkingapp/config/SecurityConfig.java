@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -29,7 +31,17 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
-                        .requestMatchers("/api/v1/auth/google").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/google").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register/trekker").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register/tour-provider").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/verify-otp").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/resend-otp").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/forgot-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/reset-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payments/payos/webhook").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/payments/return").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/payments/cancel").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/routes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/tours").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/tours/**").permitAll()
@@ -48,6 +60,11 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     private void writeErrorResponse(HttpServletResponse response, int status, String message) throws java.io.IOException {

@@ -29,6 +29,31 @@ public class TrackingController {
         return new ApiResponse<>(true, "Tracking session started successfully", trackingService.startSession(request));
     }
 
+    @PostMapping("/start")
+    @PreAuthorize("hasRole('TREKKER')")
+    public ApiResponse<TrackingStartResponse> start(@Valid @RequestBody TrackingSessionRequest request) {
+        TrackingSessionResponse session = trackingService.startSession(request);
+        return new ApiResponse<>(
+                true,
+                "Tracking session started successfully",
+                new TrackingStartResponse(session.trackingSessionId(), session.direction())
+        );
+    }
+
+    @PostMapping("/location")
+    @PreAuthorize("hasRole('TREKKER')")
+    public ApiResponse<TrackingPointResponse> addLocation(@Valid @RequestBody TrackingLocationRequest request) {
+        return new ApiResponse<>(true, "Tracking point added successfully", trackingService.addLocation(request));
+    }
+
+    @PostMapping("/location/batch")
+    @PreAuthorize("hasRole('TREKKER')")
+    public ApiResponse<TrackingLocationBatchResponse> syncLocations(
+            @Valid @RequestBody TrackingLocationBatchRequest request
+    ) {
+        return new ApiResponse<>(true, "Tracking points synced successfully", trackingService.syncLocations(request));
+    }
+
     @PostMapping("/sessions/{sessionId}/points")
     @PreAuthorize("hasRole('TREKKER')")
     public ApiResponse<TrackingPointResponse> addPoint(
@@ -50,10 +75,28 @@ public class TrackingController {
         return new ApiResponse<>(true, "Tracking session retrieved successfully", trackingService.findSessionById(sessionId));
     }
 
+    @GetMapping("/session/{sessionId}")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<TrackingSessionResponse> getSessionAlias(@PathVariable Long sessionId) {
+        return new ApiResponse<>(true, "Tracking session retrieved successfully", trackingService.findSessionById(sessionId));
+    }
+
     @GetMapping("/sessions/{sessionId}/points")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<List<TrackingPointResponse>> getSessionPoints(@PathVariable Long sessionId) {
         return new ApiResponse<>(true, "Tracking points retrieved successfully", trackingService.findSessionPoints(sessionId));
+    }
+
+    @GetMapping("/session/{sessionId}/history")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<List<TrackingPointResponse>> getSessionHistory(@PathVariable Long sessionId) {
+        return new ApiResponse<>(true, "Tracking points retrieved successfully", trackingService.findSessionPoints(sessionId));
+    }
+
+    @GetMapping("/session/{sessionId}/latest")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<TrackingPointResponse> getLatestPoint(@PathVariable Long sessionId) {
+        return new ApiResponse<>(true, "Latest tracking point retrieved successfully", trackingService.findLatestPoint(sessionId));
     }
 
     @PutMapping("/sessions/{sessionId}/pause")
@@ -72,5 +115,11 @@ public class TrackingController {
     @PreAuthorize("hasRole('TREKKER')")
     public ApiResponse<TrackingSessionResponse> finishSession(@PathVariable Long sessionId) {
         return new ApiResponse<>(true, "Tracking session finished successfully", trackingService.finishSession(sessionId));
+    }
+
+    @PostMapping("/session/{sessionId}/complete")
+    @PreAuthorize("hasRole('TREKKER')")
+    public ApiResponse<TrackingSessionResponse> completeSession(@PathVariable Long sessionId) {
+        return new ApiResponse<>(true, "Tracking session completed successfully", trackingService.finishSession(sessionId));
     }
 }

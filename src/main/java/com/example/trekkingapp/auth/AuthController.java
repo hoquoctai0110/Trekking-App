@@ -23,8 +23,44 @@ public class AuthController {
 
     @PostMapping("/google")
     public ApiResponse<GoogleLoginResponse> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
-        System.out.println("Received Google idToken: " + request.idToken());
         return new ApiResponse<>(true, "Google login successful", authService.loginWithGoogle(request));
+    }
+
+    @PostMapping("/login")
+    public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return new ApiResponse<>(true, "Login successful", authService.login(request));
+    }
+
+    @PostMapping("/register/trekker")
+    public ApiResponse<OtpChallengeResponse> registerTrekker(@Valid @RequestBody RegisterTrekkerRequest request) {
+        return new ApiResponse<>(true, "Trekker registered. Verify OTP to activate the account", authService.registerTrekker(request));
+    }
+
+    @PostMapping("/register/tour-provider")
+    public ApiResponse<OtpChallengeResponse> registerTourProvider(@Valid @RequestBody RegisterTourProviderRequest request) {
+        return new ApiResponse<>(true, "Tour provider registered. Verify OTP to activate the account", authService.registerTourProvider(request));
+    }
+
+    @PostMapping("/verify-otp")
+    public ApiResponse<AuthResponse> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+        return new ApiResponse<>(true, "OTP verified successfully", authService.verifyOtp(request));
+    }
+
+    @PostMapping("/resend-otp")
+    public ApiResponse<OtpChallengeResponse> resendOtp(@Valid @RequestBody ResendOtpRequest request) {
+        return new ApiResponse<>(true, "OTP resent successfully", authService.resendOtp(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ApiResponse<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return new ApiResponse<>(true, "If the account exists, a password reset OTP has been sent", null);
+    }
+
+    @PostMapping("/reset-password")
+    public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return new ApiResponse<>(true, "Password reset successful", null);
     }
 
     @GetMapping("/me")
@@ -37,7 +73,6 @@ public class AuthController {
         return new ApiResponse<>(true, "Current user role selected successfully", authService.selectMyRole(request));
     }
 
-    // Deprecated: use POST /api/v1/auth/me/select-role instead.
     @PostMapping("/users/{userId}/select-role")
     public ResponseEntity<ApiResponse<UserResponse>> selectRole(
             @PathVariable Long userId,

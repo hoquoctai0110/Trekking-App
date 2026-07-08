@@ -38,6 +38,8 @@ public class TourProvider {
 
     private String businessLicenseUrl;
 
+    private String citizenIdImageUrl;
+
     @Column(nullable = false)
     private String phone;
 
@@ -106,6 +108,14 @@ public class TourProvider {
 
     public void setBusinessLicenseUrl(String businessLicenseUrl) {
         this.businessLicenseUrl = businessLicenseUrl;
+    }
+
+    public String getCitizenIdImageUrl() {
+        return citizenIdImageUrl;
+    }
+
+    public void setCitizenIdImageUrl(String citizenIdImageUrl) {
+        this.citizenIdImageUrl = citizenIdImageUrl;
     }
 
     public String getPhone() {

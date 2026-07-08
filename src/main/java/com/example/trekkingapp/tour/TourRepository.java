@@ -7,6 +7,8 @@ import java.util.Optional;
 
 public interface TourRepository extends JpaRepository<Tour, Long> {
 
+    List<Tour> findByStatus(String status);
+
     List<Tour> findByStatusNot(String status);
 
     List<Tour> findByProvider_ProviderIdAndStatusNot(Long providerId, String status);

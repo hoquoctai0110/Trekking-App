@@ -9,6 +9,7 @@ public record TourProviderResponse(
         String companyName,
         String description,
         String businessLicenseUrl,
+        String citizenIdImageUrl,
         String phone,
         String email,
         String address,

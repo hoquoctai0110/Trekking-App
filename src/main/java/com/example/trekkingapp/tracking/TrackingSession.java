@@ -43,9 +43,13 @@ public class TrackingSession {
 
     private String status;
 
+    private String direction;
+
     private LocalDateTime startedAt;
 
     private LocalDateTime endedAt;
+
+    private LocalDateTime pausedAt;
 
     private Double totalDistanceKm;
 
@@ -69,8 +73,16 @@ public class TrackingSession {
             startedAt = now;
         }
 
+        if (isBlank(status)) {
+            status = TrackingStatus.ACTIVE.name();
+        }
+
         if (totalDistanceKm == null) {
             totalDistanceKm = 0.0;
+        }
+
+        if (isBlank(direction)) {
+            direction = TrackingDirection.OUTBOUND.name();
         }
     }
 
@@ -127,6 +139,14 @@ public class TrackingSession {
         this.status = status;
     }
 
+    public String getDirection() {
+        return direction;
+    }
+
+    public void setDirection(String direction) {
+        this.direction = direction;
+    }
+
     public LocalDateTime getStartedAt() {
         return startedAt;
     }
@@ -141,6 +161,14 @@ public class TrackingSession {
 
     public void setEndedAt(LocalDateTime endedAt) {
         this.endedAt = endedAt;
+    }
+
+    public LocalDateTime getPausedAt() {
+        return pausedAt;
+    }
+
+    public void setPausedAt(LocalDateTime pausedAt) {
+        this.pausedAt = pausedAt;
     }
 
     public Double getTotalDistanceKm() {
@@ -189,5 +217,9 @@ public class TrackingSession {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

@@ -31,6 +31,9 @@ public class UserService {
                 user.getEmail(),
                 user.getFullName(),
                 user.getAvatarUrl(),
+                user.getPhone(),
+                user.getDateOfBirth(),
+                user.getAuthProvider(),
                 user.getStatus(),
                 user.getRoleSelected(),
                 roles

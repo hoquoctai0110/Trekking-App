@@ -1,15 +1,20 @@
 package com.example.trekkingapp.booking;
 
+import com.example.trekkingapp.payment.Payment;
 import com.example.trekkingapp.tour.Tour;
+import com.example.trekkingapp.tourschedule.TourSchedule;
 import com.example.trekkingapp.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -30,6 +35,10 @@ public class Booking {
     private Tour tour;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "schedule_id")
+    private TourSchedule schedule;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trekker_id", nullable = false)
     private User trekker;
 
@@ -39,13 +48,20 @@ public class Booking {
     @Column(nullable = false)
     private BigDecimal totalPrice;
 
-    private String bookingStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private BookingStatus bookingStatus;
 
-    private String paymentStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private PaymentStatus paymentStatus;
 
     private LocalDateTime bookedAt;
 
     private LocalDateTime updatedAt;
+
+    @OneToOne(mappedBy = "booking", fetch = FetchType.LAZY)
+    private Payment payment;
 
     @PrePersist
     void prePersist() {
@@ -53,12 +69,12 @@ public class Booking {
         bookedAt = now;
         updatedAt = now;
 
-        if (isBlank(bookingStatus)) {
-            bookingStatus = "PENDING";
+        if (bookingStatus == null) {
+            bookingStatus = BookingStatus.PENDING_PAYMENT;
         }
 
-        if (isBlank(paymentStatus)) {
-            paymentStatus = "UNPAID";
+        if (paymentStatus == null) {
+            paymentStatus = PaymentStatus.PENDING;
         }
     }
 
@@ -81,6 +97,14 @@ public class Booking {
 
     public void setTour(Tour tour) {
         this.tour = tour;
+    }
+
+    public TourSchedule getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(TourSchedule schedule) {
+        this.schedule = schedule;
     }
 
     public User getTrekker() {
@@ -107,19 +131,19 @@ public class Booking {
         this.totalPrice = totalPrice;
     }
 
-    public String getBookingStatus() {
+    public BookingStatus getBookingStatus() {
         return bookingStatus;
     }
 
-    public void setBookingStatus(String bookingStatus) {
+    public void setBookingStatus(BookingStatus bookingStatus) {
         this.bookingStatus = bookingStatus;
     }
 
-    public String getPaymentStatus() {
+    public PaymentStatus getPaymentStatus() {
         return paymentStatus;
     }
 
-    public void setPaymentStatus(String paymentStatus) {
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
 
@@ -139,7 +163,11 @@ public class Booking {
         this.updatedAt = updatedAt;
     }
 
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
     }
 }

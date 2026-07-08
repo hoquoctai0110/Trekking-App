@@ -12,4 +12,14 @@ public interface TrackingSessionRepository extends JpaRepository<TrackingSession
     List<TrackingSession> findByUser_UserId(Long userId);
 
     Optional<TrackingSession> findByUser_UserIdAndStatus(Long userId, String status);
+
+    boolean existsByBooking_BookingIdAndStatus(Long bookingId, String status);
+
+    Optional<TrackingSession> findByBooking_BookingIdAndDirectionAndStatus(
+            Long bookingId,
+            String direction,
+            String status
+    );
+
+    boolean existsByBooking_BookingIdAndDirectionAndStatus(Long bookingId, String direction, String status);
 }

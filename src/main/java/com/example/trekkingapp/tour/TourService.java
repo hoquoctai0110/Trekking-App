@@ -5,6 +5,8 @@ import com.example.trekkingapp.route.Route;
 import com.example.trekkingapp.route.RouteRepository;
 import com.example.trekkingapp.tourprovider.TourProvider;
 import com.example.trekkingapp.tourprovider.TourProviderRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,8 +15,11 @@ import java.util.List;
 @Service
 public class TourService {
 
+    private static final Logger log = LoggerFactory.getLogger(TourService.class);
+
     private static final String STATUS_DELETED = "DELETED";
     private static final String STATUS_DRAFT = "DRAFT";
+    private static final String STATUS_PUBLISHED = "PUBLISHED";
 
     private final TourRepository tourRepository;
     private final TourProviderRepository tourProviderRepository;
@@ -81,8 +86,10 @@ public class TourService {
     }
 
     @Transactional(readOnly = true)
-    public List<TourResponse> findAll() {
-        return tourRepository.findByStatusNot(STATUS_DELETED)
+    public List<TourResponse> findPublishedTours() {
+        List<Tour> publishedTours = tourRepository.findByStatus(STATUS_PUBLISHED);
+        log.info("public_tours_loaded count={}", publishedTours.size());
+        return publishedTours
                 .stream()
                 .map(this::toResponse)
                 .toList();

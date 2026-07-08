@@ -32,10 +32,8 @@ public record TourRequest(
         String duration,
         String meetingPoint,
 
-        @NotNull(message = "startDate is required")
         LocalDateTime startDate,
 
-        @NotNull(message = "endDate is required")
         LocalDateTime endDate
 ) {
 

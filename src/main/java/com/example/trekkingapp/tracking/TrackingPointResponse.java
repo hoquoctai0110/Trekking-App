@@ -3,8 +3,8 @@ package com.example.trekkingapp.tracking;
 import java.time.LocalDateTime;
 
 public record TrackingPointResponse(
-        Long pointId,
-        Long sessionId,
+        Long trackingPointId,
+        Long trackingSessionId,
         Double latitude,
         Double longitude,
         Double altitude,

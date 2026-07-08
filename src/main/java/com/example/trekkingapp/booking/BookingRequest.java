@@ -7,6 +7,9 @@ public record BookingRequest(
         @NotNull(message = "tourId is required")
         Long tourId,
 
+        @NotNull(message = "scheduleId is required")
+        Long scheduleId,
+
         @NotNull(message = "numberOfPeople is required")
         @Min(value = 1, message = "numberOfPeople must be greater than or equal to 1")
         Integer numberOfPeople

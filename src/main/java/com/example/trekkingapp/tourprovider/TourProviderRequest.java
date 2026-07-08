@@ -9,6 +9,7 @@ public record TourProviderRequest(
 
         String description,
         String businessLicenseUrl,
+        String citizenIdImageUrl,
 
         @NotBlank(message = "phone is required")
         String phone,

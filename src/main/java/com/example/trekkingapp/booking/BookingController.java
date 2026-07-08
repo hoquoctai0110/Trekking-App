@@ -47,6 +47,12 @@ public class BookingController {
         return new ApiResponse<>(true, "Bookings retrieved successfully", bookingService.findProviderBookings());
     }
 
+    @GetMapping("/{bookingId}")
+    @PreAuthorize("hasAnyRole('TREKKER', 'TOUR_PROVIDER', 'ADMIN')")
+    public ApiResponse<BookingResponse> getBooking(@PathVariable Long bookingId) {
+        return new ApiResponse<>(true, "Booking retrieved successfully", bookingService.getBookingById(bookingId));
+    }
+
     @PutMapping("/provider/{bookingId}/confirm")
     @PreAuthorize("hasRole('TOUR_PROVIDER')")
     public ApiResponse<BookingResponse> confirmProviderBooking(@PathVariable Long bookingId) {
