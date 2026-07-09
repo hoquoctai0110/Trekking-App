@@ -33,12 +33,12 @@ public class AuthController {
 
     @PostMapping("/register/trekker")
     public ApiResponse<OtpChallengeResponse> registerTrekker(@Valid @RequestBody RegisterTrekkerRequest request) {
-        return new ApiResponse<>(true, "Trekker registered. Verify OTP to activate the account", authService.registerTrekker(request));
+        return new ApiResponse<>(true, "Registration successful. Please verify OTP sent to your email.", authService.registerTrekker(request));
     }
 
-    @PostMapping("/register/tour-provider")
+    @PostMapping({"/register/tour-provider", "/register/provider"})
     public ApiResponse<OtpChallengeResponse> registerTourProvider(@Valid @RequestBody RegisterTourProviderRequest request) {
-        return new ApiResponse<>(true, "Tour provider registered. Verify OTP to activate the account", authService.registerTourProvider(request));
+        return new ApiResponse<>(true, "Registration successful. Please verify OTP sent to your email.", authService.registerTourProvider(request));
     }
 
     @PostMapping("/verify-otp")

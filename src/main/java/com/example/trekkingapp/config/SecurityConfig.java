@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register/trekker").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register/tour-provider").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register/provider").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/verify-otp").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/resend-otp").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/forgot-password").permitAll()

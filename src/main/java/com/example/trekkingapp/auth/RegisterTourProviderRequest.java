@@ -2,6 +2,8 @@ package com.example.trekkingapp.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 
 import java.time.LocalDate;
 
@@ -9,6 +11,8 @@ public record RegisterTourProviderRequest(
         @NotBlank(message = "fullName is required")
         String fullName,
 
+        @NotNull(message = "dateOfBirth is required")
+        @Past(message = "dateOfBirth must be in the past")
         LocalDate dateOfBirth,
 
         @NotBlank(message = "password is required")

@@ -3,6 +3,7 @@ package com.example.trekkingapp.common;
 import com.example.trekkingapp.auth.EmailDeliveryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -37,6 +38,25 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleIllegalStateException(IllegalStateException exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ApiResponse<>(false, resolveMessage(exception), null));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+        String message = "Request violates a unique or required data constraint";
+        String exceptionMessage = exception.getMostSpecificCause() == null
+                ? exception.getMessage()
+                : exception.getMostSpecificCause().getMessage();
+        if (exceptionMessage != null) {
+            String normalized = exceptionMessage.toLowerCase();
+            if (normalized.contains("email")) {
+                message = "Email already exists";
+            } else if (normalized.contains("phone")) {
+                message = "Phone already exists";
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiResponse<>(false, message, null));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

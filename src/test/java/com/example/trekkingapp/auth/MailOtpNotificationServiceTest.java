@@ -76,4 +76,30 @@ class MailOtpNotificationServiceTest {
 
         verify(mailSender).send(mimeMessage);
     }
+
+    @Test
+    void usesMailUsernameAsFromAddressFallbackWhenMailFromIsMissing() {
+        JavaMailSender mailSender = mock(JavaMailSender.class);
+        MockEnvironment environment = new MockEnvironment();
+        environment.setActiveProfiles("prod");
+        MimeMessage mimeMessage = new MimeMessage((Session) null);
+        MailOtpNotificationService service = new MailOtpNotificationService(
+                mailSender,
+                environment,
+                "smtp-user@gmail.com",
+                "smtp-user@gmail.com",
+                "smtp-password"
+        );
+
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+
+        assertDoesNotThrow(() -> service.sendOtpEmail(
+                "user@example.com",
+                "123456",
+                AuthOtpPurpose.REGISTER_VERIFY,
+                LocalDateTime.of(2026, 7, 7, 17, 30)
+        ));
+
+        verify(mailSender).send(mimeMessage);
+    }
 }

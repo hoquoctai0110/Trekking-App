@@ -239,6 +239,7 @@ class AuthServiceTest {
         role.setRoleName("TREKKER");
 
         when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
+        when(userRepository.existsByPhone("0812345678")).thenReturn(false);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(roleRepository.findByRoleName("TREKKER")).thenReturn(Optional.of(role));
         when(userRoleRepository.existsByUserAndRole(any(User.class), eq(role))).thenReturn(false);
@@ -255,6 +256,31 @@ class AuthServiceTest {
         assertEquals("PENDING_VERIFICATION", userCaptor.getValue().getStatus());
         verify(otpNotificationService).sendOtpEmail(eq("alice@example.com"), any(String.class), eq(AuthOtpPurpose.REGISTER_VERIFY), any());
         verify(trekkerProfileService).createProfile(any(User.class), eq("BEGINNER"), eq("citizen-id.jpg"));
+    }
+
+    @Test
+    void registerRejectsDuplicatePhone() {
+        RegisterTrekkerRequest request = new RegisterTrekkerRequest(
+                "Alice Trekker",
+                java.time.LocalDate.of(1998, 5, 10),
+                "secret123",
+                "secret123",
+                "alice@example.com",
+                "0812345678",
+                "BEGINNER",
+                "citizen-id.jpg"
+        );
+
+        when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
+        when(userRepository.existsByPhone("0812345678")).thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> authService.registerTrekker(request)
+        );
+
+        assertEquals("Phone already exists", exception.getMessage());
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test

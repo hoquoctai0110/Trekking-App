@@ -4,12 +4,18 @@ import com.example.trekkingapp.user.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Set;
 
 @Service
 public class TrekkerProfileService {
 
     private static final Set<String> SUPPORTED_EXPERIENCES = Set.of("NEWBIE", "OCCASIONAL", "FREQUENT");
+    private static final Map<String, String> EXPERIENCE_ALIASES = Map.of(
+            "BEGINNER", "NEWBIE",
+            "INTERMEDIATE", "OCCASIONAL",
+            "EXPERT", "FREQUENT"
+    );
 
     private final TrekkerProfileRepository trekkerProfileRepository;
 
@@ -42,8 +48,9 @@ public class TrekkerProfileService {
 
     public String normalizeExperience(String trekkingExperience) {
         String normalizedExperience = trekkingExperience == null ? "" : trekkingExperience.trim().toUpperCase();
+        normalizedExperience = EXPERIENCE_ALIASES.getOrDefault(normalizedExperience, normalizedExperience);
         if (!SUPPORTED_EXPERIENCES.contains(normalizedExperience)) {
-            throw new IllegalArgumentException("Unsupported trekking experience");
+            throw new IllegalArgumentException("Unsupported trekking experience. Supported values: NEWBIE, OCCASIONAL, FREQUENT");
         }
         return normalizedExperience;
     }

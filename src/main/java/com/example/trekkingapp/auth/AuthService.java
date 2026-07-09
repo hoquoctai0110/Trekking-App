@@ -123,6 +123,7 @@ public class AuthService {
     public OtpChallengeResponse registerTrekker(RegisterTrekkerRequest request) {
         validatePasswords(request.password(), request.confirmPassword());
         ensureEmailAvailable(request.email());
+        ensurePhoneAvailable(request.phone());
 
         User user = createLocalUser(
                 request.fullName(),
@@ -141,6 +142,7 @@ public class AuthService {
     public OtpChallengeResponse registerTourProvider(RegisterTourProviderRequest request) {
         validatePasswords(request.password(), request.confirmPassword());
         ensureEmailAvailable(request.email());
+        ensurePhoneAvailable(request.phone());
 
         User user = createLocalUser(
                 request.fullName(),
@@ -311,7 +313,7 @@ public class AuthService {
         User user = new User();
         user.setFullName(fullName.trim());
         user.setEmail(normalizeEmail(email));
-        user.setPhone(phone.trim());
+        user.setPhone(normalizePhone(phone));
         user.setDateOfBirth(dateOfBirth);
         user.setPasswordHash(passwordEncoder.encode(password));
         user.setStatus(STATUS_PENDING_VERIFICATION);
@@ -327,7 +329,7 @@ public class AuthService {
         tourProvider.setDescription(request.description());
         tourProvider.setBusinessLicenseUrl(request.businessLicenseUrl());
         tourProvider.setCitizenIdImageUrl(request.citizenIdImageUrl());
-        tourProvider.setPhone(request.phone().trim());
+        tourProvider.setPhone(normalizePhone(request.phone()));
         tourProvider.setEmail(normalizeEmail(request.email()));
         tourProvider.setAddress(request.address());
         tourProvider.setStatus(STATUS_PENDING);
@@ -429,6 +431,12 @@ public class AuthService {
         }
     }
 
+    private void ensurePhoneAvailable(String phone) {
+        if (userRepository.existsByPhone(normalizePhone(phone))) {
+            throw new IllegalArgumentException("Phone already exists");
+        }
+    }
+
     private void validatePasswords(String password, String confirmPassword) {
         if (!password.equals(confirmPassword)) {
             throw new IllegalArgumentException("Passwords do not match");
@@ -448,6 +456,10 @@ public class AuthService {
 
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizePhone(String phone) {
+        return phone.trim();
     }
 
     private void ensureUserVerified(User user) {
