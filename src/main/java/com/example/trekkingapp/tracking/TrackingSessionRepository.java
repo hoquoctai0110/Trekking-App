@@ -22,4 +22,6 @@ public interface TrackingSessionRepository extends JpaRepository<TrackingSession
     );
 
     boolean existsByBooking_BookingIdAndDirectionAndStatus(Long bookingId, String direction, String status);
+
+    Optional<TrackingSession> findTopByBooking_BookingIdOrderByCreatedAtDescSessionIdDesc(Long bookingId);
 }

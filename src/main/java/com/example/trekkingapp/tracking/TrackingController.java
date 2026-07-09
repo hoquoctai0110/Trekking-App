@@ -81,6 +81,16 @@ public class TrackingController {
         return new ApiResponse<>(true, "Tracking session retrieved successfully", trackingService.findSessionById(sessionId));
     }
 
+    @GetMapping("/bookings/{bookingId}/latest-session")
+    @PreAuthorize("hasRole('TREKKER')")
+    public ApiResponse<TrackingLatestSessionResponse> getLatestSessionByBooking(@PathVariable Long bookingId) {
+        return new ApiResponse<>(
+                true,
+                "Latest tracking session retrieved successfully",
+                trackingService.findLatestSessionByBookingId(bookingId)
+        );
+    }
+
     @GetMapping("/sessions/{sessionId}/points")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<List<TrackingPointResponse>> getSessionPoints(@PathVariable Long sessionId) {

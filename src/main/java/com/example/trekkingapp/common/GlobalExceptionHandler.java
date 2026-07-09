@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -98,6 +99,26 @@ public class GlobalExceptionHandler {
                 exception.getMessage(),
                 exception);
         return ResponseEntity.badRequest().body(new ApiResponse<>(false, "Invalid JSON request body", null));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException exception,
+            HttpServletRequest request
+    ) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} name={} value={} requiredType={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getName(),
+                exception.getValue(),
+                exception.getRequiredType() == null ? null : exception.getRequiredType().getSimpleName(),
+                exception.getMessage(),
+                exception);
+
+        String message = "Invalid value for parameter '" + exception.getName() + "'";
+        return ResponseEntity.badRequest().body(new ApiResponse<>(false, message, null));
     }
 
     @ExceptionHandler(ResponseStatusException.class)

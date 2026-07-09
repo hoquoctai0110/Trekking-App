@@ -72,8 +72,28 @@ public class TrackingService {
         Booking booking = bookingRepository.findByBookingId(request.bookingId())
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
 
+        log.info("[Tracking] start_session_request userId={} email={} bookingId={} tourId={} routeId={} sessionId={} bookingStatus={} paymentStatus={} direction={}",
+                currentUserId,
+                safeEmail(booking.getTrekker()),
+                booking.getBookingId(),
+                safeTourId(booking),
+                safeRouteId(booking),
+                null,
+                booking.getBookingStatus(),
+                booking.getPaymentStatus(),
+                direction);
+
         if (bookingStatusManager.synchronizePaidBooking(booking)) {
             bookingRepository.save(booking);
+            log.info("[Tracking] booking_status_synchronized userId={} email={} bookingId={} tourId={} routeId={} sessionId={} bookingStatus={} paymentStatus={}",
+                    currentUserId,
+                    safeEmail(booking.getTrekker()),
+                    booking.getBookingId(),
+                    safeTourId(booking),
+                    safeRouteId(booking),
+                    null,
+                    booking.getBookingStatus(),
+                    booking.getPaymentStatus());
         }
 
         if (!booking.getTrekker().getUserId().equals(currentUserId)) {
@@ -96,10 +116,17 @@ public class TrackingService {
                 STATUS_COMPLETED
         );
 
-        log.info("[Tracking] start bookingId = {}", booking.getBookingId());
-        log.info("[Tracking] direction = {}", direction);
-        log.info("[Tracking] active session check = {}", activeSessionExists);
-        log.info("[Tracking] completed outbound exists = {}", completedOutboundExists);
+        log.info("[Tracking] start_session_gate userId={} email={} bookingId={} tourId={} routeId={} sessionId={} bookingStatus={} paymentStatus={} activeSessionExists={} completedOutboundExists={}",
+                currentUserId,
+                safeEmail(booking.getTrekker()),
+                booking.getBookingId(),
+                safeTourId(booking),
+                safeRouteId(booking),
+                null,
+                booking.getBookingStatus(),
+                booking.getPaymentStatus(),
+                activeSessionExists,
+                completedOutboundExists);
 
         if (activeSessionExists) {
             throw new IllegalArgumentException("Booking already has an active " + direction.name() + " tracking session");
@@ -126,13 +153,26 @@ public class TrackingService {
         session.setTotalDistanceKm(0.0);
 
         TrackingSession savedSession = trackingSessionRepository.save(session);
-        log.info("[Tracking] start sessionId={} bookingId={} userId={} direction={}",
-                savedSession.getSessionId(), booking.getBookingId(), currentUserId, direction);
+        log.info("[Tracking] start_session_success userId={} email={} bookingId={} tourId={} routeId={} sessionId={} bookingStatus={} paymentStatus={} direction={}",
+                currentUserId,
+                safeEmail(booking.getTrekker()),
+                booking.getBookingId(),
+                safeTourId(booking),
+                safeRouteId(booking),
+                savedSession.getSessionId(),
+                booking.getBookingStatus(),
+                booking.getPaymentStatus(),
+                direction);
         return toSessionResponse(savedSession);
     }
 
     @Transactional
     public TrackingPointResponse addLocation(TrackingLocationRequest request) {
+        log.info("[Tracking] add_location_request userId={} trackingSessionId={} latitude={} longitude={}",
+                currentUserService.getCurrentUserId(),
+                request.trackingSessionId(),
+                request.latitude(),
+                request.longitude());
         TrackingPointRequest pointRequest = new TrackingPointRequest(
                 request.latitude(),
                 request.longitude(),
@@ -148,6 +188,7 @@ public class TrackingService {
     public TrackingLocationBatchResponse syncLocations(TrackingLocationBatchRequest request) {
         Long currentUserId = currentUserService.getCurrentUserId();
         TrackingSession session = findSession(request.trackingSessionId());
+        logSessionContext("sync_locations_request", session, currentUserId);
 
         if (!session.getUser().getUserId().equals(currentUserId)) {
             throw new IllegalArgumentException("You are not allowed to view this tracking session");
@@ -213,6 +254,17 @@ public class TrackingService {
         }
 
         trackingSessionRepository.save(session);
+        log.info("[Tracking] sync_locations_success userId={} email={} bookingId={} tourId={} routeId={} sessionId={} bookingStatus={} paymentStatus={} syncedCount={} skippedCount={}",
+                currentUserId,
+                safeEmail(session.getUser()),
+                session.getBooking().getBookingId(),
+                session.getTour().getTourId(),
+                session.getRoute().getRouteId(),
+                session.getSessionId(),
+                session.getBooking().getBookingStatus(),
+                session.getBooking().getPaymentStatus(),
+                syncedCount,
+                skippedCount);
         return new TrackingLocationBatchResponse(syncedCount, skippedCount);
     }
 
@@ -222,6 +274,7 @@ public class TrackingService {
 
         Long currentUserId = currentUserService.getCurrentUserId();
         TrackingSession session = findSession(sessionId);
+        logSessionContext("add_point_request", session, currentUserId);
 
         if (!session.getUser().getUserId().equals(currentUserId)) {
             throw new IllegalArgumentException("You are not allowed to view this tracking session");
@@ -268,8 +321,16 @@ public class TrackingService {
         trackingSessionRepository.save(session);
 
         TrackingPoint savedPoint = trackingPointRepository.save(point);
-        log.info("[Tracking] location update sessionId={} pointId={} userId={}",
-                session.getSessionId(), savedPoint.getPointId(), currentUserId);
+        log.info("[Tracking] add_point_success userId={} email={} bookingId={} tourId={} routeId={} sessionId={} bookingStatus={} paymentStatus={} pointId={}",
+                currentUserId,
+                safeEmail(session.getUser()),
+                session.getBooking().getBookingId(),
+                session.getTour().getTourId(),
+                session.getRoute().getRouteId(),
+                session.getSessionId(),
+                session.getBooking().getBookingStatus(),
+                session.getBooking().getPaymentStatus(),
+                savedPoint.getPointId());
         return toPointResponse(savedPoint);
     }
 
@@ -286,13 +347,54 @@ public class TrackingService {
     public TrackingSessionResponse findSessionById(Long sessionId) {
         TrackingSession session = findSession(sessionId);
         validateCanView(session);
+        logSessionContext("find_session_by_id", session, currentUserService.getCurrentUserId());
         return toSessionResponse(session);
+    }
+
+    @Transactional(readOnly = true)
+    public TrackingLatestSessionResponse findLatestSessionByBookingId(Long bookingId) {
+        Long currentUserId = currentUserService.getCurrentUserId();
+        Booking booking = bookingRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+        if (!booking.getTrekker().getUserId().equals(currentUserId)) {
+            throw new IllegalArgumentException("You are not allowed to track this booking");
+        }
+
+        TrackingSession latestSession = trackingSessionRepository
+                .findTopByBooking_BookingIdOrderByCreatedAtDescSessionIdDesc(bookingId)
+                .orElse(null);
+
+        log.info("[Tracking] find_latest_session_by_booking userId={} email={} bookingId={} tourId={} routeId={} sessionId={} bookingStatus={} paymentStatus={} found={}",
+                currentUserId,
+                safeEmail(booking.getTrekker()),
+                booking.getBookingId(),
+                safeTourId(booking),
+                safeRouteId(booking),
+                latestSession == null ? null : latestSession.getSessionId(),
+                booking.getBookingStatus(),
+                booking.getPaymentStatus(),
+                latestSession != null);
+
+        if (latestSession == null) {
+            return null;
+        }
+
+        return new TrackingLatestSessionResponse(
+                latestSession.getSessionId(),
+                latestSession.getBooking().getBookingId(),
+                defaultDirection(latestSession.getDirection()),
+                latestSession.getStatus(),
+                latestSession.getStartedAt(),
+                latestSession.getEndedAt()
+        );
     }
 
     @Transactional(readOnly = true)
     public List<TrackingPointResponse> findSessionPoints(Long sessionId) {
         TrackingSession session = findSession(sessionId);
         validateCanView(session);
+        logSessionContext("find_session_points", session, currentUserService.getCurrentUserId());
         return trackingPointRepository.findBySession_SessionIdOrderByRecordedAtAsc(sessionId)
                 .stream()
                 .map(this::toPointResponse)
@@ -303,6 +405,7 @@ public class TrackingService {
     public TrackingPointResponse findLatestPoint(Long sessionId) {
         TrackingSession session = findSession(sessionId);
         validateCanView(session);
+        logSessionContext("find_latest_point", session, currentUserService.getCurrentUserId());
         return trackingPointRepository.findTopBySession_SessionIdOrderByRecordedAtDescPointIdDesc(sessionId)
                 .map(this::toPointResponse)
                 .orElseThrow(() -> new IllegalArgumentException("Tracking location not found"));
@@ -311,6 +414,7 @@ public class TrackingService {
     @Transactional
     public TrackingSessionResponse pauseSession(Long sessionId) {
         TrackingSession session = findOwnedSession(sessionId);
+        logSessionContext("pause_session_request", session, currentUserService.getCurrentUserId());
         if (!STATUS_ACTIVE.equals(session.getStatus())) {
             throw new IllegalArgumentException("Tracking session is not active");
         }
@@ -318,26 +422,28 @@ public class TrackingService {
         session.setStatus(STATUS_PAUSED);
         session.setPausedAt(LocalDateTime.now());
         TrackingSession savedSession = trackingSessionRepository.save(session);
-        log.info("[Tracking] pause session={}", savedSession.getSessionId());
+        logSessionContext("pause_session_success", savedSession, currentUserService.getCurrentUserId());
         return toSessionResponse(savedSession);
     }
 
     @Transactional
     public TrackingSessionResponse resumeSession(Long sessionId) {
         TrackingSession session = findOwnedSession(sessionId);
+        logSessionContext("resume_session_request", session, currentUserService.getCurrentUserId());
         if (!STATUS_PAUSED.equals(session.getStatus())) {
             throw new IllegalArgumentException("Tracking session is not active");
         }
 
         session.setStatus(STATUS_ACTIVE);
         TrackingSession savedSession = trackingSessionRepository.save(session);
-        log.info("[Tracking] resume session={}", savedSession.getSessionId());
+        logSessionContext("resume_session_success", savedSession, currentUserService.getCurrentUserId());
         return toSessionResponse(savedSession);
     }
 
     @Transactional
     public TrackingSessionResponse finishSession(Long sessionId) {
         TrackingSession session = findOwnedSession(sessionId);
+        logSessionContext("finish_session_request", session, currentUserService.getCurrentUserId());
         if (!STATUS_ACTIVE.equals(session.getStatus()) && !STATUS_PAUSED.equals(session.getStatus())) {
             throw new IllegalArgumentException("Tracking session is not active");
         }
@@ -345,9 +451,7 @@ public class TrackingService {
         session.setStatus(STATUS_COMPLETED);
         session.setEndedAt(LocalDateTime.now());
         TrackingSession savedSession = trackingSessionRepository.save(session);
-        log.info("[Tracking] complete session={}", savedSession.getSessionId());
-        log.info("[Tracking] complete sessionId={} bookingId={} userId={}",
-                savedSession.getSessionId(), savedSession.getBooking().getBookingId(), savedSession.getUser().getUserId());
+        logSessionContext("finish_session_success", savedSession, currentUserService.getCurrentUserId());
         return toSessionResponse(savedSession);
     }
 
@@ -490,5 +594,33 @@ public class TrackingService {
                 * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return earthRadiusKm * c;
+    }
+
+    private void logSessionContext(String action, TrackingSession session, Long currentUserId) {
+        log.info("[Tracking] {} userId={} email={} bookingId={} tourId={} routeId={} sessionId={} bookingStatus={} paymentStatus={} sessionStatus={}",
+                action,
+                currentUserId,
+                safeEmail(session.getUser()),
+                session.getBooking().getBookingId(),
+                session.getTour().getTourId(),
+                session.getRoute().getRouteId(),
+                session.getSessionId(),
+                session.getBooking().getBookingStatus(),
+                session.getBooking().getPaymentStatus(),
+                session.getStatus());
+    }
+
+    private String safeEmail(User user) {
+        return user == null ? null : user.getEmail();
+    }
+
+    private Long safeTourId(Booking booking) {
+        return booking.getTour() == null ? null : booking.getTour().getTourId();
+    }
+
+    private Long safeRouteId(Booking booking) {
+        return booking.getTour() == null || booking.getTour().getRoute() == null
+                ? null
+                : booking.getTour().getRoute().getRouteId();
     }
 }
