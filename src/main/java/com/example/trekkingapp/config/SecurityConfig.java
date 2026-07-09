@@ -1,6 +1,7 @@
 package com.example.trekkingapp.config;
 
 import com.example.trekkingapp.auth.JwtAuthenticationFilter;
+import com.example.trekkingapp.common.RequestTimingFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,9 +20,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RequestTimingFilter requestTimingFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, RequestTimingFilter requestTimingFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.requestTimingFilter = requestTimingFilter;
     }
 
     @Bean
@@ -58,6 +61,7 @@ public class SecurityConfig {
                                 writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, "Forbidden")
                         )
                 )
+                .addFilterBefore(requestTimingFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

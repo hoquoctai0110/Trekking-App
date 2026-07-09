@@ -1,8 +1,11 @@
 package com.example.trekkingapp.auth;
 
 import com.example.trekkingapp.common.ApiResponse;
+import com.example.trekkingapp.common.RequestTracing;
 import com.example.trekkingapp.user.UserResponse;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthService authService;
 
@@ -33,11 +38,21 @@ public class AuthController {
 
     @PostMapping("/register/trekker")
     public ApiResponse<OtpChallengeResponse> registerTrekker(@Valid @RequestBody RegisterTrekkerRequest request) {
+        String requestId = RequestTracing.getRequestId();
+        log.info("REGISTER_REQUEST_RECEIVED endpoint=/api/v1/auth/register/trekker email={} role=TREKKER requestId={} startTimestamp={}",
+                request.email(),
+                requestId,
+                java.time.Instant.now());
         return new ApiResponse<>(true, "Registration successful. Please verify OTP sent to your email.", authService.registerTrekker(request));
     }
 
     @PostMapping({"/register/tour-provider", "/register/provider"})
     public ApiResponse<OtpChallengeResponse> registerTourProvider(@Valid @RequestBody RegisterTourProviderRequest request) {
+        String requestId = RequestTracing.getRequestId();
+        log.info("REGISTER_REQUEST_RECEIVED endpoint=/api/v1/auth/register/provider email={} role=TOUR_PROVIDER requestId={} startTimestamp={}",
+                request.email(),
+                requestId,
+                java.time.Instant.now());
         return new ApiResponse<>(true, "Registration successful. Please verify OTP sent to your email.", authService.registerTourProvider(request));
     }
 

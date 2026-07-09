@@ -1,6 +1,7 @@
 package com.example.trekkingapp.common;
 
 import com.example.trekkingapp.auth.EmailDeliveryException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,7 +19,14 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException exception) {
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
         String message = exception.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -30,18 +38,39 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException exception) {
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
         return ResponseEntity.badRequest().body(new ApiResponse<>(false, resolveMessage(exception), null));
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalStateException(IllegalStateException exception) {
+    public ResponseEntity<ApiResponse<Void>> handleIllegalStateException(IllegalStateException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ApiResponse<>(false, resolveMessage(exception), null));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
         String message = "Request violates a unique or required data constraint";
         String exceptionMessage = exception.getMostSpecificCause() == null
                 ? exception.getMessage()
@@ -60,12 +89,26 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException() {
+    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
         return ResponseEntity.badRequest().body(new ApiResponse<>(false, "Invalid JSON request body", null));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(ResponseStatusException exception) {
+    public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(ResponseStatusException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
         String message = exception.getReason();
         if (message == null || message.isBlank()) {
             message = resolveMessage(exception);
@@ -76,14 +119,24 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EmailDeliveryException.class)
-    public ResponseEntity<ApiResponse<Void>> handleEmailDeliveryException(EmailDeliveryException exception) {
+    public ResponseEntity<ApiResponse<Void>> handleEmailDeliveryException(EmailDeliveryException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(new ApiResponse<>(false, resolveMessage(exception), null));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException(Exception exception) {
-        log.error("unhandled_exception type={} message={}",
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
                 exception.getClass().getSimpleName(),
                 exception.getMessage(),
                 exception);

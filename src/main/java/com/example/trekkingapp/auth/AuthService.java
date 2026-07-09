@@ -1,5 +1,6 @@
 package com.example.trekkingapp.auth;
 
+import com.example.trekkingapp.common.RequestTracing;
 import com.example.trekkingapp.role.Role;
 import com.example.trekkingapp.role.RoleRepository;
 import com.example.trekkingapp.role.UserRole;
@@ -11,11 +12,15 @@ import com.example.trekkingapp.user.User;
 import com.example.trekkingapp.user.UserRepository;
 import com.example.trekkingapp.user.UserResponse;
 import com.example.trekkingapp.user.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
@@ -27,6 +32,8 @@ import java.util.Set;
 
 @Service
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private static final String STATUS_ACTIVE = "ACTIVE";
     private static final String STATUS_PENDING = "PENDING";
@@ -121,40 +128,110 @@ public class AuthService {
 
     @Transactional
     public OtpChallengeResponse registerTrekker(RegisterTrekkerRequest request) {
-        validatePasswords(request.password(), request.confirmPassword());
-        ensureEmailAvailable(request.email());
-        ensurePhoneAvailable(request.phone());
+        String requestId = RequestTracing.getRequestId();
+        long startedAt = System.nanoTime();
+        long lastStepAt = startedAt;
+        registerTransactionLogs(requestId, "registerTrekker", request.email());
+        log.info("[REGISTER][{}] START email={}", requestId, request.email());
 
-        User user = createLocalUser(
-                request.fullName(),
-                request.email(),
-                request.phone(),
-                request.dateOfBirth(),
-                request.password()
-        );
-        assignRole(user, ROLE_TREKKER);
-        trekkerProfileService.createProfile(user, request.trekkingExperience(), request.citizenIdImageUrl());
+        try {
+            validatePasswords(request.password(), request.confirmPassword());
+            lastStepAt = logRegisterStep(requestId, "VALIDATION_OK", startedAt, lastStepAt);
 
-        return issueOtp(user, AuthOtpPurpose.REGISTER_VERIFY, false);
+            log.info("[REGISTER][{}] CHECK_EMAIL_DUPLICATE_START email={}", requestId, request.email());
+            ensureEmailAvailable(request.email());
+            lastStepAt = logRegisterStep(requestId, "CHECK_EMAIL_DUPLICATE_OK", startedAt, lastStepAt);
+
+            log.info("[REGISTER][{}] CHECK_PHONE_DUPLICATE_START phone={}", requestId, request.phone());
+            ensurePhoneAvailable(request.phone());
+            lastStepAt = logRegisterStep(requestId, "CHECK_PHONE_DUPLICATE_OK", startedAt, lastStepAt);
+
+            log.info("[REGISTER][{}] HASH_PASSWORD_START", requestId);
+            String hashedPassword = passwordEncoder.encode(request.password());
+            lastStepAt = logRegisterStep(requestId, "HASH_PASSWORD_DONE", startedAt, lastStepAt);
+
+            log.info("[REGISTER][{}] CREATE_USER_START", requestId);
+            User user = createLocalUser(
+                    request.fullName(),
+                    request.email(),
+                    request.phone(),
+                    request.dateOfBirth(),
+                    hashedPassword
+            );
+            lastStepAt = logRegisterStep(requestId, "CREATE_USER_DONE userId=" + user.getUserId(), startedAt, lastStepAt);
+
+            log.info("[REGISTER][{}] CREATE_PROFILE_START", requestId);
+            assignRole(user, ROLE_TREKKER);
+            trekkerProfileService.createProfile(user, request.trekkingExperience(), request.citizenIdImageUrl());
+            lastStepAt = logRegisterStep(requestId, "CREATE_PROFILE_DONE", startedAt, lastStepAt);
+
+            OtpChallengeResponse response = issueOtp(user, AuthOtpPurpose.REGISTER_VERIFY, false, requestId, startedAt, lastStepAt);
+            long totalDurationMs = elapsedMillis(startedAt);
+            log.info("[REGISTER][{}] REGISTER_SUCCESS duration={}ms", requestId, totalDurationMs);
+            return response;
+        } catch (RuntimeException exception) {
+            log.error("[REGISTER][{}] REGISTER_FAILED type={} message={} duration={}ms",
+                    requestId,
+                    exception.getClass().getName(),
+                    exception.getMessage(),
+                    elapsedMillis(startedAt),
+                    exception);
+            throw exception;
+        }
     }
 
     @Transactional
     public OtpChallengeResponse registerTourProvider(RegisterTourProviderRequest request) {
-        validatePasswords(request.password(), request.confirmPassword());
-        ensureEmailAvailable(request.email());
-        ensurePhoneAvailable(request.phone());
+        String requestId = RequestTracing.getRequestId();
+        long startedAt = System.nanoTime();
+        long lastStepAt = startedAt;
+        registerTransactionLogs(requestId, "registerTourProvider", request.email());
+        log.info("[REGISTER][{}] START email={}", requestId, request.email());
 
-        User user = createLocalUser(
-                request.fullName(),
-                request.email(),
-                request.phone(),
-                request.dateOfBirth(),
-                request.password()
-        );
-        assignRole(user, ROLE_TOUR_PROVIDER);
-        createTourProviderProfile(user, request);
+        try {
+            validatePasswords(request.password(), request.confirmPassword());
+            lastStepAt = logRegisterStep(requestId, "VALIDATION_OK", startedAt, lastStepAt);
 
-        return issueOtp(user, AuthOtpPurpose.REGISTER_VERIFY, false);
+            log.info("[REGISTER][{}] CHECK_EMAIL_DUPLICATE_START email={}", requestId, request.email());
+            ensureEmailAvailable(request.email());
+            lastStepAt = logRegisterStep(requestId, "CHECK_EMAIL_DUPLICATE_OK", startedAt, lastStepAt);
+
+            log.info("[REGISTER][{}] CHECK_PHONE_DUPLICATE_START phone={}", requestId, request.phone());
+            ensurePhoneAvailable(request.phone());
+            lastStepAt = logRegisterStep(requestId, "CHECK_PHONE_DUPLICATE_OK", startedAt, lastStepAt);
+
+            log.info("[REGISTER][{}] HASH_PASSWORD_START", requestId);
+            String hashedPassword = passwordEncoder.encode(request.password());
+            lastStepAt = logRegisterStep(requestId, "HASH_PASSWORD_DONE", startedAt, lastStepAt);
+
+            log.info("[REGISTER][{}] CREATE_USER_START", requestId);
+            User user = createLocalUser(
+                    request.fullName(),
+                    request.email(),
+                    request.phone(),
+                    request.dateOfBirth(),
+                    hashedPassword
+            );
+            lastStepAt = logRegisterStep(requestId, "CREATE_USER_DONE userId=" + user.getUserId(), startedAt, lastStepAt);
+
+            log.info("[REGISTER][{}] CREATE_PROFILE_START", requestId);
+            assignRole(user, ROLE_TOUR_PROVIDER);
+            createTourProviderProfile(user, request);
+            lastStepAt = logRegisterStep(requestId, "CREATE_PROFILE_DONE", startedAt, lastStepAt);
+
+            OtpChallengeResponse response = issueOtp(user, AuthOtpPurpose.REGISTER_VERIFY, false, requestId, startedAt, lastStepAt);
+            long totalDurationMs = elapsedMillis(startedAt);
+            log.info("[REGISTER][{}] REGISTER_SUCCESS duration={}ms", requestId, totalDurationMs);
+            return response;
+        } catch (RuntimeException exception) {
+            log.error("[REGISTER][{}] REGISTER_FAILED type={} message={} duration={}ms",
+                    requestId,
+                    exception.getClass().getName(),
+                    exception.getMessage(),
+                    elapsedMillis(startedAt),
+                    exception);
+            throw exception;
+        }
     }
 
     @Transactional
@@ -309,13 +386,13 @@ public class AuthService {
         return existingUser;
     }
 
-    private User createLocalUser(String fullName, String email, String phone, java.time.LocalDate dateOfBirth, String password) {
+    private User createLocalUser(String fullName, String email, String phone, java.time.LocalDate dateOfBirth, String passwordHash) {
         User user = new User();
         user.setFullName(fullName.trim());
         user.setEmail(normalizeEmail(email));
         user.setPhone(normalizePhone(phone));
         user.setDateOfBirth(dateOfBirth);
-        user.setPasswordHash(passwordEncoder.encode(password));
+        user.setPasswordHash(passwordHash);
         user.setStatus(STATUS_PENDING_VERIFICATION);
         user.setAuthProvider(AUTH_PROVIDER_LOCAL);
         user.setRoleSelected(true);
@@ -340,7 +417,14 @@ public class AuthService {
         return new AuthResponse(jwtService.generateToken(user), userService.toResponse(user));
     }
 
-    private OtpChallengeResponse issueOtp(User user, AuthOtpPurpose purpose, boolean isResend) {
+    private OtpChallengeResponse issueOtp(
+            User user,
+            AuthOtpPurpose purpose,
+            boolean isResend,
+            String requestId,
+            long startedAt,
+            long lastStepAt
+    ) {
         LocalDateTime currentTime = now();
         AuthOtpToken previousToken = authOtpTokenRepository
                 .findFirstByUserAndPurposeAndUsedAtIsNullOrderByCreatedAtDesc(user, purpose)
@@ -360,7 +444,9 @@ public class AuthService {
             authOtpTokenRepository.save(previousToken);
         }
 
+        log.info("[REGISTER][{}] GENERATE_OTP_START", requestId);
         String otp = generateOtp();
+        lastStepAt = logRegisterStep(requestId, "GENERATE_OTP_DONE", startedAt, lastStepAt);
         AuthOtpToken token = new AuthOtpToken();
         token.setUser(user);
         token.setPurpose(purpose);
@@ -368,10 +454,20 @@ public class AuthService {
         token.setExpiresAt(currentTime.plusMinutes(OTP_EXPIRY_MINUTES));
         token.setAttemptCount(0);
         token.setResendCount(isResend ? resendCount : 0);
+        log.info("[OTP][{}] GENERATED purpose={} expiry={}", requestId, purpose, token.getExpiresAt());
 
+        log.info("[REGISTER][{}] SAVE_OTP_START", requestId);
         AuthOtpToken savedToken = authOtpTokenRepository.save(token);
+        lastStepAt = logRegisterStep(requestId, "SAVE_OTP_DONE", startedAt, lastStepAt);
+        log.info("[OTP][{}] TOKEN_SAVED tokenId={} purpose={} expiry={}",
+                requestId,
+                savedToken.getId(),
+                purpose,
+                savedToken.getExpiresAt());
+        log.info("[REGISTER][{}] SEND_EMAIL_START", requestId);
         otpNotificationService.sendOtpEmail(user.getEmail(), otp, purpose, savedToken.getExpiresAt());
-        return new OtpChallengeResponse(
+            lastStepAt = logRegisterStep(requestId, "SEND_EMAIL_DONE", startedAt, lastStepAt);
+            return new OtpChallengeResponse(
                 user.getEmail(),
                 purpose,
                 savedToken.getExpiresAt(),
@@ -477,5 +573,42 @@ public class AuthService {
         int min = bound / 10;
         int value = secureRandom.nextInt(bound - min) + min;
         return String.valueOf(value);
+    }
+
+    private OtpChallengeResponse issueOtp(User user, AuthOtpPurpose purpose, boolean isResend) {
+        long startedAt = System.nanoTime();
+        return issueOtp(user, purpose, isResend, RequestTracing.getRequestId(), startedAt, startedAt);
+    }
+
+    private void registerTransactionLogs(String requestId, String operation, String email) {
+        log.info("[REGISTER][{}] TRANSACTION_BEGIN operation={} email={}", requestId, operation, email);
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                log.info("[REGISTER][{}] TRANSACTION_COMMIT operation={} email={}", requestId, operation, email);
+            }
+
+            @Override
+            public void afterCompletion(int status) {
+                if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                    log.info("[REGISTER][{}] TRANSACTION_ROLLBACK operation={} email={}", requestId, operation, email);
+                }
+            }
+        });
+    }
+
+    private long logRegisterStep(String requestId, String step, long startedAt, long previousStepAt) {
+        long nowNanos = System.nanoTime();
+        long stepDurationMs = (nowNanos - previousStepAt) / 1_000_000;
+        long totalDurationMs = (nowNanos - startedAt) / 1_000_000;
+        log.info("[REGISTER][{}] {} stepDuration={}ms totalDuration={}ms", requestId, step, stepDurationMs, totalDurationMs);
+        return nowNanos;
+    }
+
+    private long elapsedMillis(long startedAt) {
+        return (System.nanoTime() - startedAt) / 1_000_000;
     }
 }

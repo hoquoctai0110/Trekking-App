@@ -22,7 +22,7 @@ class MailOtpNotificationServiceTest {
         JavaMailSender mailSender = mock(JavaMailSender.class);
         MockEnvironment environment = new MockEnvironment();
         environment.setActiveProfiles("dev");
-        MailOtpNotificationService service = new MailOtpNotificationService(mailSender, environment, "", "", "");
+        MailOtpNotificationService service = new MailOtpNotificationService(mailSender, environment, "", "", "", "", "");
 
         assertDoesNotThrow(() -> service.sendOtpEmail(
                 "user@example.com",
@@ -38,7 +38,7 @@ class MailOtpNotificationServiceTest {
         JavaMailSender mailSender = mock(JavaMailSender.class);
         MockEnvironment environment = new MockEnvironment();
         environment.setActiveProfiles("prod");
-        MailOtpNotificationService service = new MailOtpNotificationService(mailSender, environment, "", "", "");
+        MailOtpNotificationService service = new MailOtpNotificationService(mailSender, environment, "", "", "", "", "");
 
         assertThrows(
                 EmailDeliveryException.class,
@@ -62,7 +62,9 @@ class MailOtpNotificationServiceTest {
                 environment,
                 "noreply@chektrek.com",
                 "smtp-user",
-                "smtp-password"
+                "smtp-password",
+                "smtp.gmail.com",
+                "587"
         );
 
         when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
@@ -88,7 +90,9 @@ class MailOtpNotificationServiceTest {
                 environment,
                 "smtp-user@gmail.com",
                 "smtp-user@gmail.com",
-                "smtp-password"
+                "smtp-password",
+                "smtp.gmail.com",
+                "587"
         );
 
         when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
