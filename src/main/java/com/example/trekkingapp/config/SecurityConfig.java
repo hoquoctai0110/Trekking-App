@@ -61,8 +61,9 @@ public class SecurityConfig {
                                 writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, "Forbidden")
                         )
                 )
-                .addFilterBefore(requestTimingFilter, JwtAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(requestTimingFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }
