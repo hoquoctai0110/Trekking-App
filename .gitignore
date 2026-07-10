@@ -37,6 +37,7 @@ build/
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # Spring local/prod configs
 src/main/resources/application-local.properties

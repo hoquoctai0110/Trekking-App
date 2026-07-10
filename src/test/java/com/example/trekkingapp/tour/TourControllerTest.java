@@ -32,6 +32,8 @@ class TourControllerTest {
                 "MODERATE",
                 "2 days",
                 "Basecamp",
+                "https://cdn.example.com/cover.jpg",
+                null,
                 "PUBLISHED",
                 null,
                 null,
@@ -47,6 +49,7 @@ class TourControllerTest {
         assertNotNull(response.data());
         assertEquals(1, response.data().size());
         assertEquals("PUBLISHED", response.data().getFirst().status());
+        assertEquals("https://cdn.example.com/cover.jpg", response.data().getFirst().coverImageUrl());
         verify(tourService).findPublishedTours();
     }
 }

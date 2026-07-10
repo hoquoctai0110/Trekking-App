@@ -49,6 +49,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/routes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/tours").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/tours/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/community/posts").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/community/posts/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/tour-providers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/tour-providers/**").permitAll()
                         .anyRequest().authenticated()

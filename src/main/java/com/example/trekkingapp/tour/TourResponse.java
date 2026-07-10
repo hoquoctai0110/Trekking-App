@@ -2,6 +2,7 @@ package com.example.trekkingapp.tour;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record TourResponse(
         Long tourId,
@@ -16,6 +17,8 @@ public record TourResponse(
         String difficulty,
         String duration,
         String meetingPoint,
+        String coverImageUrl,
+        List<TourImageResponse> images,
         String status,
         LocalDateTime startDate,
         LocalDateTime endDate,

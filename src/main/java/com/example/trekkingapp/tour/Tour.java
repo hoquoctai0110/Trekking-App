@@ -54,6 +54,10 @@ public class Tour {
 
     private String status;
 
+    private String coverImageUrl;
+
+    private String coverImagePublicId;
+
     @Column
     private LocalDateTime startDate;
 
@@ -166,6 +170,22 @@ public class Tour {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getCoverImageUrl() {
+        return coverImageUrl;
+    }
+
+    public void setCoverImageUrl(String coverImageUrl) {
+        this.coverImageUrl = coverImageUrl;
+    }
+
+    public String getCoverImagePublicId() {
+        return coverImagePublicId;
+    }
+
+    public void setCoverImagePublicId(String coverImagePublicId) {
+        this.coverImagePublicId = coverImagePublicId;
     }
 
     public LocalDateTime getStartDate() {

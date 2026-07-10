@@ -8,6 +8,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -119,6 +121,36 @@ public class GlobalExceptionHandler {
 
         String message = "Invalid value for parameter '" + exception.getName() + "'";
         return ResponseEntity.badRequest().body(new ApiResponse<>(false, message, null));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException exception,
+            HttpServletRequest request
+    ) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
+        return ResponseEntity.badRequest().body(new ApiResponse<>(false, "Image file exceeds the maximum request size", null));
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingServletRequestPartException(
+            MissingServletRequestPartException exception,
+            HttpServletRequest request
+    ) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
+        return ResponseEntity.badRequest().body(new ApiResponse<>(false, "Required multipart field is missing", null));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
