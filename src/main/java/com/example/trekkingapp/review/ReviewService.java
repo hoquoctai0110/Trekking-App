@@ -74,6 +74,8 @@ public class ReviewService {
     public List<ReviewResponse> getReviewsByTour(Long tourId) {
         return reviewRepository.findByTour_TourIdOrderByCreatedAtDesc(tourId)
                 .stream()
+                .filter(review -> review.getDeletedAt() == null)
+                .filter(review -> !Boolean.FALSE.equals(review.getVisible()))
                 .map(this::toResponse)
                 .toList();
     }
@@ -81,8 +83,14 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public ReviewSummaryResponse getTourReviewSummary(Long tourId) {
         List<Review> reviews = reviewRepository.findByTour_TourId(tourId);
-        long reviewCount = reviews.size();
+        List<Review> visibleReviews = reviews.stream()
+                .filter(review -> review.getDeletedAt() == null)
+                .filter(review -> !Boolean.FALSE.equals(review.getVisible()))
+                .toList();
+        long reviewCount = visibleReviews.size();
         double averageRating = reviews.stream()
+                .filter(review -> review.getDeletedAt() == null)
+                .filter(review -> !Boolean.FALSE.equals(review.getVisible()))
                 .mapToInt(Review::getRating)
                 .average()
                 .orElse(0.0);

@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,7 +74,7 @@ class PaymentServiceTest {
                 tourProviderRepository
         );
 
-        doAnswer(invocation -> {
+        lenient().doAnswer(invocation -> {
             Booking booking = invocation.getArgument(0);
             booking.setPaymentStatus(PaymentStatus.PAID);
             if (booking.getBookingStatus() == BookingStatus.PENDING_PAYMENT
@@ -82,6 +83,14 @@ class PaymentServiceTest {
             }
             return true;
         }).when(bookingStatusManager).synchronizePaidBooking(any(Booking.class));
+
+        lenient().doAnswer(invocation -> {
+            Booking booking = invocation.getArgument(0);
+            PaymentStatus paymentStatus = invocation.getArgument(1);
+            booking.setBookingStatus(BookingStatus.CANCELLED);
+            booking.setPaymentStatus(paymentStatus);
+            return null;
+        }).when(bookingStatusManager).cancelBooking(any(Booking.class), any(PaymentStatus.class));
     }
 
     @Test

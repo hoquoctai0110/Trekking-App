@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
 
     boolean existsByUserAndRole(User user, Role role);
+
+    void deleteByUser(User user);
 }

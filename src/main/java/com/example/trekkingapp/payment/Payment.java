@@ -54,6 +54,16 @@ public class Payment {
     @Column(length = 100)
     private String transactionId;
 
+    @Column(length = 50)
+    private String refundStatus;
+
+    @Column(columnDefinition = "TEXT")
+    private String refundReason;
+
+    private LocalDateTime refundRequestedAt;
+
+    private LocalDateTime refundedAt;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -158,5 +168,37 @@ public class Payment {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getRefundStatus() {
+        return refundStatus;
+    }
+
+    public void setRefundStatus(String refundStatus) {
+        this.refundStatus = refundStatus;
+    }
+
+    public String getRefundReason() {
+        return refundReason;
+    }
+
+    public void setRefundReason(String refundReason) {
+        this.refundReason = refundReason;
+    }
+
+    public LocalDateTime getRefundRequestedAt() {
+        return refundRequestedAt;
+    }
+
+    public void setRefundRequestedAt(LocalDateTime refundRequestedAt) {
+        this.refundRequestedAt = refundRequestedAt;
+    }
+
+    public LocalDateTime getRefundedAt() {
+        return refundedAt;
+    }
+
+    public void setRefundedAt(LocalDateTime refundedAt) {
+        this.refundedAt = refundedAt;
     }
 }

@@ -52,6 +52,54 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new ApiResponse<>(false, resolveMessage(exception), null));
     }
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidationDomainException(ValidationException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
+        return ResponseEntity.badRequest().body(new ApiResponse<>(false, resolveMessage(exception), null));
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleResourceNotFoundException(ResourceNotFoundException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false, resolveMessage(exception), null));
+    }
+
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleForbiddenOperationException(ForbiddenOperationException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse<>(false, resolveMessage(exception), null));
+    }
+
+    @ExceptionHandler({ConflictException.class, InvalidStateTransitionException.class})
+    public ResponseEntity<ApiResponse<Void>> handleConflictException(RuntimeException exception, HttpServletRequest request) {
+        log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",
+                RequestTracing.getRequestId(),
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse<>(false, resolveMessage(exception), null));
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalStateException(IllegalStateException exception, HttpServletRequest request) {
         log.error("REQUEST_EXCEPTION requestId={} method={} path={} type={} message={}",

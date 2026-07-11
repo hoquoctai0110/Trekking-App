@@ -1,11 +1,12 @@
 package com.example.trekkingapp.sos;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface SOSAlertRepository extends JpaRepository<SOSAlert, Long> {
+public interface SOSAlertRepository extends JpaRepository<SOSAlert, Long>, JpaSpecificationExecutor<SOSAlert> {
 
     Optional<SOSAlert> findBySosId(Long sosId);
 

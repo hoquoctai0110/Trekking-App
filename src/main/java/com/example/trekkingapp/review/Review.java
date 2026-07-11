@@ -45,6 +45,17 @@ public class Review {
     private String comment;
 
     @Column(nullable = false)
+    private Boolean visible;
+
+    @Column(nullable = false)
+    private Boolean flagged;
+
+    @Column(columnDefinition = "TEXT")
+    private String moderationReason;
+
+    private LocalDateTime deletedAt;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
@@ -55,6 +66,12 @@ public class Review {
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
+        if (visible == null) {
+            visible = true;
+        }
+        if (flagged == null) {
+            flagged = false;
+        }
     }
 
     @PreUpdate
@@ -124,5 +141,37 @@ public class Review {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Boolean getVisible() {
+        return visible;
+    }
+
+    public void setVisible(Boolean visible) {
+        this.visible = visible;
+    }
+
+    public Boolean getFlagged() {
+        return flagged;
+    }
+
+    public void setFlagged(Boolean flagged) {
+        this.flagged = flagged;
+    }
+
+    public String getModerationReason() {
+        return moderationReason;
+    }
+
+    public void setModerationReason(String moderationReason) {
+        this.moderationReason = moderationReason;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
     }
 }
